@@ -1,0 +1,56 @@
+/////
+vim:set ts=4 sw=4 tw=82 noet:
+/////
+kimg (1)
+========
+
+Name
+----
+kimg - KnightOS image conversion tool
+
+Synopsis
+--------
+'kimg' [options] _input_ _output_
+
+Description
+-----------
+
+Converts image formats supported by ImageMagick to the KnightOS image format.
+
+Options
+-------
+
+*-c, \--castle*::
+	Implies -m, and -n.
+
+*-m, \--monochrome*::
+	Converts the image to a monochrome KIMG file. Implies -p.
+
+*-n, \--no-compression*::
+	Does not use (lossless) KIMG compression.
+
+*-p, \--no-pallette*::
+	Instruct kimg not to use a color pallette.
+
+*-x, \--compression* <format>::
+	Uses the specified compression algorithm. The following options are available:
+	
+	* _RLE_ (default)
+
+Examples
+--------
+
+kimg example.png example.img::
+	Converts example.png (portable network graphics) into example.img (kimg).
+
+Authors
+-------
+
+Maintained by Drew DeVault <sir@cmpwn.com>, who is assisted by other open
+source contributors. For more information about kimg development, see
+<https://github.com/KnightOS/kimg>.
+
+See Also
+--------
+
+**convert**(1)
