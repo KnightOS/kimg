@@ -55,7 +55,7 @@ int main(int argc, char *argv[]) {
             } else if (strcasecmp("RLE", argv[i]) == 0) {
                 context.compression = RLE;
             } else {
-                printf("Invalid compression type: %s\n", argv[i]);
+                fprintf(stderr, "Invalid compression type: %s\n", argv[i]);
                 print_usage();
                 return 1;
             }
@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
             } else if (context.outfile == NULL) {
                 context.outfile = argv[i];
             } else {
-                printf("Unrecorgnized argument: %s\n", argv[i]);
+                fprintf(stderr, "Unrecorgnized argument: %s\n", argv[i]);
                 print_usage();
                 return 1;
             }
@@ -75,54 +75,66 @@ int main(int argc, char *argv[]) {
     FILE *infile;
     FILE *outfile;
 
-    MagickWand    *mw;
-    PixelIterator *imw;
-    PixelWand     **pmw;
+    MagickWand        *input;
+    PixelIterator     *iter;
+    PixelWand         **row;
+    MagickPixelPacket pixel;
 
     unsigned long x, y;
     unsigned long width, height;
 
-    Quantum qr, qg, qb;
+    MagickBooleanType status;
 
 
     // Read input file
     infile = fopen(context.infile, "r");
     if (infile == NULL) {
-        printf("No such file or directory: %s\n", context.infile);
+        fprintf(stderr, "No such file or directory: %s\n", context.infile);
         return 1;
     }
 
     // Set up ImageMagick
     MagickWandGenesis();
-    mw = NewMagickWand();
+    input = NewMagickWand();
 
     // Load MagickWand with image file.
-    MagickReadImageFile(mw, infile);
+    status = MagickReadImageFile(input, infile);
+    if (status == MagickFalse) {
+        ExceptionType type;
+        fprintf(stderr, "Error reading image file: %s\n", context.infile);
+        fprintf(stderr, "ImageMagick says: %s\n", MagickGetException(input, &type));
+        return 1;
+    }
 
     // Get width and height
-    width  = MagickGetImageWidth(mw);
-    height = MagickGetImageHeight(mw);
+    width  = MagickGetImageWidth(input);
+    height = MagickGetImageHeight(input);
 
     // Convert to grayscale if we're monochrome
     if (!context.color)
-      MagickTransformImageColorspace(mw, GRAYColorspace);
+      MagickSetImageType(input, GrayscaleType);
+      MagickSetImageColorspace(input, GRAYColorspace);
+      //MagickTransformImageColorspace(input, GRAYColorspace);
 
-    imw = NewPixelIterator(mw);
+    iter = NewPixelIterator(input);
     for (y=0; y < height; y++) {
-        pmw = PixelGetNextIteratorRow(imw, &width);
+        row = PixelGetNextIteratorRow(iter, &width);
         for (x=0; x < (long) width; x++) {
+            PixelGetMagickColor(row[x],&pixel);
             if (context.color) {
-                qr = PixelGetRedQuantum(pmw[x]);
-                qg = PixelGetGreenQuantum(pmw[x]);
-                qb = PixelGetBlueQuantum(pmw[x]);
-
-                printf("(%lu, %lu): R%f G%f B%f\n", x, y, qr, qg, qb);
+                printf("(%lu, %lu): #%0X%0X%0X\n", y, x,
+                        (uint8_t)pixel.red,
+                        (uint8_t)pixel.green,
+                        (uint8_t)pixel.blue);
+            } else {
+                printf("(%lu, %lu): %0X\n", y, x,
+                        (uint8_t)pixel.red);
             }
         }
     }
 
-    imw = DestroyPixelIterator(imw);
-    mw  = DestroyMagickWand(mw);
+    iter  = DestroyPixelIterator(iter);
+    input = DestroyMagickWand(input);
     MagickWandTerminus();
 
     return 0;
