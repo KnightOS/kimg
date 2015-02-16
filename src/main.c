@@ -79,11 +79,13 @@ int main(int argc, char *argv[]) {
     PixelIterator     *iter;
     PixelWand         **row;
     MagickPixelPacket pixel;
+    uint8_t           *output;
 
     unsigned long x, y;
     unsigned long width, height;
+    unsigned long wrap, padding;
 
-    MagickBooleanType status;
+    MagickBooleanType mwstatus;
 
 
     // Read input file
@@ -98,8 +100,8 @@ int main(int argc, char *argv[]) {
     input = NewMagickWand();
 
     // Load MagickWand with image file.
-    status = MagickReadImageFile(input, infile);
-    if (status == MagickFalse) {
+    mwstatus = MagickReadImageFile(input, infile);
+    if (mwstatus == MagickFalse) {
         ExceptionType type;
         fprintf(stderr, "Error reading image file: %s\n", context.infile);
         fprintf(stderr, "ImageMagick says: %s\n", MagickGetException(input, &type));
@@ -109,26 +111,52 @@ int main(int argc, char *argv[]) {
     // Get width and height
     width  = MagickGetImageWidth(input);
     height = MagickGetImageHeight(input);
+    // Calculate wrap (width of each row in bytes).
+    wrap = width / 8;
+    if (width % 8 != 0) wrap++;
+    fprintf(stderr, "Wrap: %lu\n", wrap);
+    // Calculate padding (padding on right side to make column a full byte)
+    padding = (wrap * 8) - width;
+    fprintf(stderr, "Padding: %lu\n", padding);
+
+    // Allocate output array
+    output = (uint8_t*)malloc((width + padding) * height);
 
     // Convert to grayscale if we're monochrome
     if (!context.color)
       MagickSetImageType(input, GrayscaleType);
       MagickSetImageColorspace(input, GRAYColorspace);
-      //MagickTransformImageColorspace(input, GRAYColorspace);
 
     iter = NewPixelIterator(input);
     for (y=0; y < height; y++) {
         row = PixelGetNextIteratorRow(iter, &width);
-        for (x=0; x < (long) width; x++) {
-            PixelGetMagickColor(row[x],&pixel);
+        for (x=0; x < width; x++) {
+            PixelGetMagickColor(row[x], &pixel);
+
             if (context.color) {
+                // TODO: color support
+                /*
                 printf("(%lu, %lu): #%0X%0X%0X\n", y, x,
                         (uint8_t)pixel.red,
                         (uint8_t)pixel.green,
                         (uint8_t)pixel.blue);
+                */
             } else {
+                if (pixel.red < 32767) { // 1
+                } else { // 0
+                }
+                /*
                 printf("(%lu, %lu): %0X\n", y, x,
                         (uint8_t)pixel.red);
+                */
+            }
+        }
+        if ((width + padding) > width) {
+            for (int i = 0; i < padding; i++) {
+                if (context.color) {
+                // TODO: color support
+                } else { // 0
+                }
             }
         }
     }
