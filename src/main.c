@@ -1,11 +1,24 @@
-#include "common.h"
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <strings.h>
+#include <wand/MagickWand.h>
+
+#define KIMG_VERSION 0
 
 struct {
 	char *infile;
 	char *outfile;
 	bool color;
 	bool palette;
-	kimg_compression_t compression;
+	enum {
+		NONE,    // 0b00
+		RLE,     // 0b01
+		FUTURE1, // 0b10
+		FUTURE2, // 0b11
+	} compression;
 } context;
 
 void print_usage(void) {
@@ -16,7 +29,7 @@ void print_usage(void) {
 void init_context(void) {
 	context.color = true;
 	context.palette = true;
-	context.compression = NONE; // TODO: implement compression
+	context.compression = NONE; // TODO: compression
 }
 
 int parse_arguments(int argc, char **argv) {
@@ -79,19 +92,6 @@ int main(int argc, char **argv) {
 	FILE *infile;
 	FILE *outfile;
 
-	MagickWand *input;
-	PixelIterator *iter;
-	PixelWand **row;
-	MagickPixelPacket pixel;
-
-	unsigned long x, y;
-	unsigned long height;
-	unsigned long width, bytewidth;
-
-	uint8_t mask, byte;
-
-	MagickBooleanType mwstatus;
-
 	infile = fopen(context.infile, "r");
 	if (infile == NULL) {
 		fprintf(stderr, "No such file or directory: %s\n", context.infile);
@@ -104,10 +104,12 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
+	MagickWand *input;
+
 	MagickWandGenesis();
 	input = NewMagickWand();
 
-	mwstatus = MagickReadImageFile(input, infile);
+	MagickBooleanType mwstatus = MagickReadImageFile(input, infile);
 	if (mwstatus == MagickFalse) {
 		ExceptionType type;
 		fprintf(stderr, "Error reading image file: %s\n", context.infile);
@@ -115,34 +117,41 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-	height = MagickGetImageHeight(input);
-	width = MagickGetImageWidth(input);
+	unsigned long height, width;
+	unsigned short bytewidth;
+
+	height    = MagickGetImageHeight(input);
+	width     = MagickGetImageWidth(input);
 	bytewidth = width / 8;
 	if (width % 8 != 0) {
 		bytewidth++;
 	}
 
-	// Convert to grayscale if we're monochrome
 	if (!context.color) {
 		MagickSetImageType(input, GrayscaleType);
 		MagickSetImageColorspace(input, GRAYColorspace);
 	}
 
-	kimg_format_t format;
-	format.compression = 0;
-	format.palette = 0;
-	format.color = 0;
+	uint8_t  _version = KIMG_VERSION;
+	uint8_t  _format  = 0; // TODO: format flags
+	uint16_t _height  = (uint16_t)height;
+	uint16_t _width   = (uint16_t)height;
 
-	uint16_t _width = (uint16_t)width;
-	uint16_t _height = (uint16_t)height;
-	uint8_t _format = (uint8_t)format.value;
-	fprintf(outfile, "KIMG");
-	fputc(KIMG_VERSION, outfile);
-	fwrite(&_format, sizeof(uint8_t), 1, outfile);
-	fwrite(&_height, sizeof(uint16_t), 1, outfile);
-	fwrite(&_width, sizeof(uint16_t), 1, outfile);
+	fwrite("KIMG",    4, 1, outfile); // 0x00: Magic Header
+	fwrite(&_version, 1, 1, outfile); // 0x04: Format Version
+	fwrite(&_format,  1, 1, outfile); // 0x05: Format Flags
+	fwrite(&_height,  2, 1, outfile); // 0x06: Image Height
+	fwrite(&_width,   2, 1, outfile); // 0x08: Image Width
+									  // 0x09: Palette/Image Data
+
+	PixelIterator     *iter;
+	PixelWand         **row;
+	MagickPixelPacket pixel;
+	uint8_t           mask, byte;
 
 	iter = NewPixelIterator(input);
+
+	unsigned long x, y;
 	for (y = 0; y < height; y++) {
 		mask = 0x80;
 		byte = 0;
@@ -160,7 +169,7 @@ int main(int argc, char **argv) {
 			}
 			mask >>= 1;
 
-			if (mask == 0) {
+			if (mask == 0) { // TODO: build in memory
 				fwrite(&byte, sizeof(char), sizeof(byte), outfile);
 				mask = 0x80;
 				byte = 0;
@@ -168,8 +177,6 @@ int main(int argc, char **argv) {
 		}
 		if (mask != 0x80) {
 			fwrite(&byte, sizeof(char), sizeof(byte), outfile);
-			mask = 0x80;
-			byte = 0;
 		}
 	}
 
