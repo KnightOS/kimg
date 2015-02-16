@@ -29,12 +29,13 @@ Options
 *-n, \--no-compression*::
 	Does not use (lossless) KIMG compression.
 
-*-p, \--no-pallette*::
-	Instruct kimg not to use a color pallette.
+*-p, \--no-palette*::
+	Instruct kimg not to use a color palette.
 
 *-x, \--compression* <format>::
 	Uses the specified compression algorithm. The following options are available:
 	
+	* _NONE_
 	* _RLE_ (default)
 
 Examples
