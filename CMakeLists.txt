@@ -17,6 +17,11 @@ if(ImageMagick_FOUND)
 endif()
 
 # Executable
+
+add_definitions(
+  -DMAGICKCORE_HDRI_ENABLE=1
+  -DMAGICKCORE_QUANTUM_DEPTH=16
+)
 add_executable(kimg
   src/main.c
 )

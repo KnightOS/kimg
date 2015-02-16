@@ -1,19 +1,15 @@
 #include "common.h"
 
 struct {
-    char             *infile;
-    char             *outfile;
-    bool             color;
-    bool             palette;
-    enum {NONE, RLE} compression;
+    char               *infile;
+    char               *outfile;
+    bool               color;
+    bool               palette;
+    kimg_compression_t compression;
 } context;
 
-uint8_t rotl(uint8_t x) {
-    return (x << 1) | (x >> 7);
-}
-
 void print_usage(void) {
-    printf("FIXME: USAGE\n");
+    printf("TODO: USAGE\n");
     return;
 }
 
@@ -72,6 +68,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
+
     FILE *infile;
     FILE *outfile;
 
@@ -79,11 +76,12 @@ int main(int argc, char *argv[]) {
     PixelIterator     *iter;
     PixelWand         **row;
     MagickPixelPacket pixel;
-    uint8_t           *output;
 
     unsigned long x, y;
-    unsigned long width, height;
-    unsigned long wrap, padding;
+    unsigned long height;
+    unsigned long width, bytewidth;
+
+    uint8_t mask, byte;
 
     MagickBooleanType mwstatus;
 
@@ -94,12 +92,18 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "No such file or directory: %s\n", context.infile);
         return 1;
     }
+    // Open output file
+    outfile = fopen(context.outfile, "wb");
+    if (outfile == NULL) {
+        fprintf(stderr, "Error opening file: %s\n", context.outfile);
+        return 1;
+    }
 
-    // Set up ImageMagick
+    // Set up MagickWand
     MagickWandGenesis();
     input = NewMagickWand();
 
-    // Load MagickWand with image file.
+    // Load input image into MagickWand
     mwstatus = MagickReadImageFile(input, infile);
     if (mwstatus == MagickFalse) {
         ExceptionType type;
@@ -108,27 +112,40 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    // Get width and height
-    width  = MagickGetImageWidth(input);
-    height = MagickGetImageHeight(input);
-    // Calculate wrap (width of each row in bytes).
-    wrap = width / 8;
-    if (width % 8 != 0) wrap++;
-    fprintf(stderr, "Wrap: %lu\n", wrap);
-    // Calculate padding (padding on right side to make column a full byte)
-    padding = (wrap * 8) - width;
-    fprintf(stderr, "Padding: %lu\n", padding);
-
-    // Allocate output array
-    output = (uint8_t*)malloc((width + padding) * height);
+    // Get height
+    height    = MagickGetImageHeight(input);
+    // Get width and calculate bytewidth (width of row in bytes)
+    width     = MagickGetImageWidth(input);
+    bytewidth = width / 8;
+    if (width % 8 != 0) bytewidth++;
 
     // Convert to grayscale if we're monochrome
     if (!context.color)
       MagickSetImageType(input, GrayscaleType);
       MagickSetImageColorspace(input, GRAYColorspace);
 
+    kimg_header_t header;
+    kimg_format_t format;
+    // Build kimg format byte
+    format.compression = 0;
+    format.palette     = 0;
+    format.color       = 0;
+
+    // Build kimg header
+    strcpy(header.magic, KIMG_MAGIC);
+    header.version = KIMG_VERSION;
+    header.format  = format;
+    header.height  = height;
+    header.width   = width;
+
+    fwrite(&header, sizeof(header), 1, outfile);
+
     iter = NewPixelIterator(input);
     for (y=0; y < height; y++) {
+        // Reset mask and byte
+        mask = 0x80; // 0b10000000
+        byte = 0;
+
         row = PixelGetNextIteratorRow(iter, &width);
         for (x=0; x < width; x++) {
             PixelGetMagickColor(row[x], &pixel);
@@ -142,28 +159,38 @@ int main(int argc, char *argv[]) {
                         (uint8_t)pixel.blue);
                 */
             } else {
-                if (pixel.red < 32767) { // 1
-                } else { // 0
+                // Set bit if pixel is positive
+                if (pixel.red < 32767) {
+                    byte |= mask;
                 }
                 /*
                 printf("(%lu, %lu): %0X\n", y, x,
                         (uint8_t)pixel.red);
                 */
             }
-        }
-        if ((width + padding) > width) {
-            for (int i = 0; i < padding; i++) {
-                if (context.color) {
-                // TODO: color support
-                } else { // 0
-                }
+
+            // Reset mask and byte and output byte
+            if (x % 8 == 0 && x != 0) {
+                mask = 0x80; // 0b10000000
+                byte = 0;
+
+                fwrite(&byte, sizeof(char), sizeof(byte), outfile);
+            // Also output if at the end of the row (zero-pading the right)
+            } else if (x == (width - 1)) {
+                fwrite(&byte, sizeof(char), sizeof(byte), outfile);
             }
+
+            // Shift mask right 1 position to mask the next bit
+            mask = mask >> 1;
         }
     }
 
+    // Clean up MagickWand.
     iter  = DestroyPixelIterator(iter);
     input = DestroyMagickWand(input);
     MagickWandTerminus();
+    // Flush output file.
+    fclose(outfile);
 
     return 0;
 }
