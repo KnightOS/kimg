@@ -43,8 +43,8 @@ int parse_arguments(int argc, char **argv) {
 	#define arg(short, long) strcasecmp(short, argv[i]) == 0 || strcasecmp(long, argv[i]) == 0
 	for (int i = 0; i < argc; i++) {
 		if (arg("-c", "--castle")) {
-			context.color       = false;
-			context.palette     = false;
+			context.color = false;
+			context.palette = false;
 			context.compression = NONE;
 		} else if (arg("-h", "--help")) {
 			print_usage();
@@ -120,8 +120,8 @@ int main(int argc, char **argv) {
 	unsigned long height, width;
 	unsigned short bytewidth;
 
-	height    = MagickGetImageHeight(input);
-	width     = MagickGetImageWidth(input);
+	height = MagickGetImageHeight(input);
+	width = MagickGetImageWidth(input);
 	bytewidth = width / 8;
 	if (width % 8 != 0) {
 		bytewidth++;
@@ -132,10 +132,10 @@ int main(int argc, char **argv) {
 		MagickSetImageColorspace(input, GRAYColorspace);
 	}
 
-	uint8_t  _version = KIMG_VERSION;
-	uint8_t  _format  = 0; // TODO: format flags
-	uint16_t _height  = (uint16_t)height;
-	uint16_t _width   = (uint16_t)height;
+	uint8_t _version = KIMG_VERSION;
+	uint8_t _format = 0; // TODO: format flags
+	uint16_t _height = (uint16_t)height;
+	uint16_t _width = (uint16_t)width;
 
 	fwrite("KIMG",    4, 1, outfile); // 0x00: Magic Header
 	fwrite(&_version, 1, 1, outfile); // 0x04: Format Version
@@ -144,10 +144,10 @@ int main(int argc, char **argv) {
 	fwrite(&_width,   2, 1, outfile); // 0x08: Image Width
 									  // 0x09: Palette/Image Data
 
-	PixelIterator     *iter;
-	PixelWand         **row;
+	PixelIterator *iter;
+	PixelWand **row;
 	MagickPixelPacket pixel;
-	uint8_t           mask, byte;
+	uint8_t mask, byte;
 
 	iter = NewPixelIterator(input);
 
@@ -167,20 +167,21 @@ int main(int argc, char **argv) {
 					byte |= mask;
 				}
 			}
+
 			mask >>= 1;
 
 			if (mask == 0) { // TODO: build in memory
-				fwrite(&byte, sizeof(char), sizeof(byte), outfile);
+				fwrite(&byte, 1, 1, outfile);
 				mask = 0x80;
 				byte = 0;
 			}
 		}
 		if (mask != 0x80) {
-			fwrite(&byte, sizeof(char), sizeof(byte), outfile);
+			fwrite(&byte, 1, 1, outfile);
 		}
 	}
 
-	iter  = DestroyPixelIterator(iter);
+	iter = DestroyPixelIterator(iter);
 	input = DestroyMagickWand(input);
 	MagickWandTerminus();
 	fclose(outfile);
