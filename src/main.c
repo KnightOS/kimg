@@ -171,13 +171,13 @@ int main(int argc, char **argv) {
 			mask >>= 1;
 
 			if (mask == 0) { // TODO: build in memory
-				fwrite(&byte, 1, 1, outfile);
+				fwrite(&byte, sizeof(uint8_t), 1, outfile);
 				mask = 0x80;
 				byte = 0;
 			}
 		}
 		if (mask != 0x80) {
-			fwrite(&byte, 1, 1, outfile);
+			fwrite(&byte, sizeof(uint8_t), 1, outfile);
 		}
 	}
 
