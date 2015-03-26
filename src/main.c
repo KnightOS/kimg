@@ -72,7 +72,7 @@ int parse_arguments(int argc, char **argv) {
 			} else if (context.outfile == NULL) {
 				context.outfile = argv[i];
 			} else {
-				fprintf(stderr, "Unrecorgnized argument: %s\n", argv[i]);
+				fprintf(stderr, "Unrecognized argument: %s\n", argv[i]);
 				print_usage();
 				return 1;
 			}
