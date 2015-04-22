@@ -20,8 +20,11 @@ Converts image formats supported by ImageMagick to the KnightOS image format.
 Options
 -------
 
+*-b, \--bare*::
+	Omit the KIMG headers and write raw image data out.
+
 *-c, \--castle*::
-	Implies -m, and -n.
+	Implies -m, and -n and enforces the use of a 16x16 sprite.
 
 *-m, \--monochrome*::
 	Converts the image to a monochrome KIMG file. Implies -p.

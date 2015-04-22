@@ -13,6 +13,7 @@ struct {
 	char *outfile;
 	bool color;
 	bool palette;
+	bool bare;
 	enum {
 		NONE,    // 0b00
 		RLE,     // 0b01
@@ -30,6 +31,7 @@ void init_context(void) {
 	context.color = true;
 	context.palette = true;
 	context.compression = NONE; // TODO: compression
+	context.bare = false;
 }
 
 int parse_arguments(int argc, char **argv) {
@@ -49,6 +51,8 @@ int parse_arguments(int argc, char **argv) {
 		} else if (arg("-h", "--help")) {
 			print_usage();
 			return 0;
+		} else if (arg("-b", "--bare")) {
+			context.bare = true;
 		} else if (arg("-m", "--monochrome")) {
 			context.color = false;
 		} else if (arg("-n", "--no-compression")) {
@@ -137,12 +141,14 @@ int main(int argc, char **argv) {
 	uint16_t _height = (uint16_t)height;
 	uint16_t _width = (uint16_t)width;
 
-	fwrite("KIMG",    4, 1, outfile); // 0x00: Magic Header
-	fwrite(&_version, 1, 1, outfile); // 0x04: Format Version
-	fwrite(&_format,  1, 1, outfile); // 0x05: Format Flags
-	fwrite(&_height,  2, 1, outfile); // 0x06: Image Height
-	fwrite(&_width,   2, 1, outfile); // 0x08: Image Width
-									  // 0x09: Palette/Image Data
+	if (!context.bare) {
+		fwrite("KIMG",    4, 1, outfile); // 0x00: Magic Header
+		fwrite(&_version, 1, 1, outfile); // 0x04: Format Version
+		fwrite(&_format,  1, 1, outfile); // 0x05: Format Flags
+		fwrite(&_height,  2, 1, outfile); // 0x06: Image Height
+		fwrite(&_width,   2, 1, outfile); // 0x08: Image Width
+										  // 0x09: Palette/Image Data...
+	}
 
 	PixelIterator *iter;
 	PixelWand **row;
