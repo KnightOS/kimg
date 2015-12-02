@@ -104,7 +104,7 @@ int main(int argc, char **argv) {
 
 	outfile = fopen(context.outfile, "wb");
 	if (outfile == NULL) {
-		fprintf(stderr, "Error opening file: %s\n", context.outfile);
+		fprintf(stderr, "Please provide an outfile. See `man kimg` for more details.");
 		return 1;
 	}
 
