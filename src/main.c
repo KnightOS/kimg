@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
-#include <wand/MagickWand.h>
+#include <MagickWand/MagickWand.h>
 
 #define KIMG_VERSION 0
 
@@ -152,7 +152,7 @@ int main(int argc, char **argv) {
 
 	PixelIterator *iter;
 	PixelWand **row;
-	MagickPixelPacket pixel;
+	PixelInfo pixel;
 	uint8_t mask, byte;
 
 	iter = NewPixelIterator(input);
