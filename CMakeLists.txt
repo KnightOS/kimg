@@ -30,23 +30,23 @@ target_link_libraries(kimg
 )
 
 if(WIN32 OR CYGWIN)
-  install(PROGRAMS bin/kimg.exe
+  install(TARGETS kimg
       DESTINATION bin)
 else()
-  install(PROGRAMS bin/kimg
+  install(TARGETS kimg
       DESTINATION bin)
 endif()
 
 # Docs
-ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/kimg.1
-  COMMAND a2x --no-xmllint --doctype manpage --format manpage ${CMAKE_CURRENT_SOURCE_DIR}/kimg.1.txt
+ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_BINARY_DIR}/kimg.1
+  COMMAND a2x --no-xmllint --doctype manpage --format manpage ${CMAKE_CURRENT_SOURCE_DIR}/kimg.1.txt -D ${CMAKE_BINARY_DIR}
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/kimg.1.txt
 )
 
 ADD_CUSTOM_TARGET(man ALL
-  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/kimg.1)
+  DEPENDS ${CMAKE_BINARY_DIR}/kimg.1)
 
 INSTALL(
-  FILES ${CMAKE_CURRENT_SOURCE_DIR}/kimg.1
-  DESTINATION ${CMAKE_INSTALL_PREFIX}/man/man1
+  FILES ${CMAKE_BINARY_DIR}/kimg.1
+  DESTINATION man/man1
 )
