@@ -4,7 +4,6 @@ project(kimg C)
 
 # Cmake Options
 set(CMAKE_BUILD_TYPE Release)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin")
 
 # Compiler Options
 set(CMAKE_C_FLAGS "-std=c99 -Wall")
