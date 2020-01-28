@@ -1,40 +1,22 @@
 cmake_minimum_required(VERSION 2.8.5)
-# Project Options
+
 project(kimg C)
 
-# Cmake Options
-set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -pedantic -Werror")
 
-# Compiler Options
-set(CMAKE_C_FLAGS "-std=c99 -Wall")
-
-# Dependencies
-find_package(ImageMagick REQUIRED COMPONENTS MagickWand)
-if(ImageMagick_FOUND)
-  include_directories(SYSTEM ${ImageMagick_INCLUDE_DIRS})
-  link_directories(${ImageMagick_LIBRARY_DIRS})
+if (NOT DEFINED CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
 endif()
 
-# Executable
+find_package(ImageMagick REQUIRED COMPONENTS MagickWand)
 
 add_definitions(
   -DMAGICKCORE_HDRI_ENABLE=1
   -DMAGICKCORE_QUANTUM_DEPTH=16
 )
-add_executable(kimg
-  src/main.c
-)
-target_link_libraries(kimg
-  ${ImageMagick_LIBRARIES}
-)
-
-if(WIN32 OR CYGWIN)
-  install(TARGETS kimg
-      DESTINATION bin)
-else()
-  install(TARGETS kimg
-      DESTINATION bin)
-endif()
+add_executable(kimg src/main.c)
+target_include_directories(kimg PRIVATE ${ImageMagick_INCLUDE_DIRS})
+target_link_libraries(kimg ${ImageMagick_LIBRARIES})
 
 # Docs
 ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_BINARY_DIR}/kimg.1
@@ -42,10 +24,11 @@ ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_BINARY_DIR}/kimg.1
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/kimg.1.txt
 )
 
-ADD_CUSTOM_TARGET(man ALL
-  DEPENDS ${CMAKE_BINARY_DIR}/kimg.1)
+ADD_CUSTOM_TARGET(man ALL DEPENDS ${CMAKE_BINARY_DIR}/kimg.1)
 
 INSTALL(
   FILES ${CMAKE_BINARY_DIR}/kimg.1
-  DESTINATION man/man1
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/share/man/man1
 )
+install(TARGETS kimg DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
+
