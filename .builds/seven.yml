@@ -1,6 +1,7 @@
 image: alpine/latest
 packages:
   - cmake
+  - imagemagick
   - imagemagick-dev
   - ninja
 sources:
