@@ -1,0 +1,13 @@
+image: alpine/latest
+packages:
+  - cmake
+  - imagemagick-dev
+  - ninja
+sources:
+  - https://github.com/KnightOS/kimg
+tasks:
+  - build: |
+      cd kimg
+      mkdir build && cd build
+      cmake .. -GNinja
+      ninja

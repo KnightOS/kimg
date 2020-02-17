@@ -1,0 +1,13 @@
+image: debian/stable
+packages:
+  - cmake
+  - libmagickwand-dev
+  - ninja-build
+sources:
+  - https://github.com/KnightOS/kimg
+tasks:
+  - build: |
+      cd kimg
+      mkdir build && cd build
+      cmake .. -GNinja
+      ninja
