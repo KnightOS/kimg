@@ -4,7 +4,16 @@
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
+
+#if MAGICK_VERSION == 6
+#include <wand/MagickWand.h>
+typedef MagickPixelPacket PixelType;
+#elif MAGICK_VERSION == 7
 #include <MagickWand/MagickWand.h>
+typedef PixelInfo PixelType;
+#else
+#error Unsupported imagemagick version!
+#endif
 
 #define KIMG_VERSION 0
 
@@ -152,7 +161,7 @@ int main(int argc, char **argv) {
 
 	PixelIterator *iter;
 	PixelWand **row;
-	PixelInfo pixel;
+	PixelType pixel;
 	uint8_t mask, byte;
 
 	iter = NewPixelIterator(input);

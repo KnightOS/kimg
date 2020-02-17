@@ -10,9 +10,12 @@ endif()
 
 find_package(ImageMagick REQUIRED COMPONENTS MagickWand)
 
+string(SUBSTRING "${ImageMagick_VERSION_STRING}" 0 1 ImageMagickMajor)
+
 add_definitions(
   -DMAGICKCORE_HDRI_ENABLE=1
   -DMAGICKCORE_QUANTUM_DEPTH=16
+  -DMAGICK_VERSION=${ImageMagickMajor}
 )
 add_executable(kimg src/main.c)
 target_include_directories(kimg PRIVATE ${ImageMagick_INCLUDE_DIRS})
