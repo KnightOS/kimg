@@ -4,6 +4,7 @@ packages:
   - imagemagick
   - libmagickwand-dev
   - ninja-build
+  - asciidoc
 sources:
   - https://github.com/KnightOS/kimg
 tasks:

@@ -4,6 +4,7 @@ packages:
   - imagemagick
   - imagemagick-dev
   - ninja
+  - asciidoc
 sources:
   - https://github.com/KnightOS/kimg
 tasks:
