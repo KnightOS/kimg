@@ -32,7 +32,19 @@ struct {
 } context;
 
 void print_usage(void) {
-	printf("TODO: USAGE\n");
+	printf(
+	    	"Usage: kimg [options] input output\n"
+	    	"\n"
+	    	"Options:\n"
+	    	"\n"
+	    	"-m, --monochrome\n"
+	    	"\tConverts the image to a monochrome KIMG file. Implies -p.\n"
+	    	"\n"
+	    	"-n, --no-compression\n"
+	    	"\tDisable usage of (lossless) compression.\n"
+	    	"\n"
+	    	"For more information, see the man page.\n"
+	);
 	return;
 }
 
