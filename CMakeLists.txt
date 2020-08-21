@@ -17,7 +17,7 @@ add_definitions(
   -DMAGICKCORE_QUANTUM_DEPTH=16
   -DMAGICK_VERSION=${ImageMagickMajor}
 )
-add_executable(kimg src/main.c)
+add_executable(kimg kimg.c)
 target_include_directories(kimg PRIVATE ${ImageMagick_INCLUDE_DIRS})
 target_link_libraries(kimg ${ImageMagick_LIBRARIES})
 
