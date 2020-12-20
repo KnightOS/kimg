@@ -1,9 +1,7 @@
-image: debian/stable
+image: alpine/latest
 packages:
   - cmake
-  - imagemagick
-  - libmagickwand-dev
-  - ninja-build
+  - ninja
   - asciidoc
 sources:
   - https://github.com/KnightOS/kimg
