@@ -15,7 +15,7 @@ Synopsis
 Description
 -----------
 
-Converts image formats supported by ImageMagick to the KnightOS image format.
+Converts image formats supported by stb_image to the KnightOS image format.
 
 Options
 -------

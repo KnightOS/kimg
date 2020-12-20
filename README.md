@@ -1,6 +1,6 @@
 # kimg
 
-KnightOS image conversion tool. Converts image formats supported by ImageMagick to the KnightOS image format.
+KnightOS image conversion tool. Converts image formats supported by stb_image to the KnightOS image format.
 
 Work in progress.
 

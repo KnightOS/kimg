@@ -8,18 +8,8 @@ if (NOT DEFINED CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
 endif()
 
-find_package(ImageMagick REQUIRED COMPONENTS MagickWand)
-
-string(SUBSTRING "${ImageMagick_VERSION_STRING}" 0 1 ImageMagickMajor)
-
-add_definitions(
-  -DMAGICKCORE_HDRI_ENABLE=1
-  -DMAGICKCORE_QUANTUM_DEPTH=16
-  -DMAGICK_VERSION=${ImageMagickMajor}
-)
-add_executable(kimg kimg.c)
-target_include_directories(kimg PRIVATE ${ImageMagick_INCLUDE_DIRS})
-target_link_libraries(kimg ${ImageMagick_LIBRARIES})
+add_executable(kimg main.c)
+target_link_libraries(kimg m)
 
 # Docs
 ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_BINARY_DIR}/kimg.1
