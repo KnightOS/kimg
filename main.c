@@ -34,6 +34,38 @@ init_context(void)
 }
 
 void
+load_image(const char *const path)
+{
+	int h, w;
+	context.infile = stbi_load(path, &w, &h, NULL, 1);
+	if(context.infile == NULL){
+		fprintf(stderr, "Error parsing image: %s\n", path);
+		exit(1);
+	}
+	context.height = (uint16_t)h;
+	context.width = (uint16_t)w;
+}
+
+void
+load_file(const char *const path)
+{
+	if(context.infile == NULL){
+		load_image(path);
+	}else if(context.outfile == NULL){
+		context.outfile = fopen(path, "wb");
+		if(context.outfile == NULL){
+			fprintf(stderr, "Error opening file: %s\n", path);
+			exit(1);
+		}
+	}else{
+		fprintf(stderr, "Extra file specified: %s\n", path);
+		exit(1);
+	}
+}
+
+#define arg(short, long) strcmp(short, argv[i]) == 0 || strcmp(long, argv[i]) == 0
+
+void
 parse_arguments(const int argc, const char *const *const argv)
 {
 	if(argc == 1){
@@ -41,34 +73,17 @@ parse_arguments(const int argc, const char *const *const argv)
 		exit(1);
 	}
 
-	#define arg(short, long) strcmp(short, argv[i]) == 0 || strcmp(long, argv[i]) == 0
 	for (int i = 1; i < argc; i++){
 		if(arg("-h", "--help")){
 			printf(usage, argv[0]);
 			exit(0);
 		}else if(arg("-b", "--bare")){
 			context.bare = true;
+		}else if(argv[i][0] == '-'){
+			fprintf(stderr, "Unrecognized argument: %s\n", argv[i]);
+			exit(1);
 		}else{
-			if(context.infile == NULL){
-				int h, w;
-				context.infile = stbi_load(argv[i], &w, &h, NULL, 1);
-				if(context.infile == NULL){
-					fprintf(stderr, "Error parsing image: %s\n", argv[i]);
-					exit(1);
-				}
-				context.height = (uint16_t)h;
-				context.width = (uint16_t)w;
-			}else if(context.outfile == NULL){
-				context.outfile = fopen(argv[i], "wb");
-				if(context.outfile == NULL){
-					fprintf(stderr, "Error opening file: %s\n", argv[i]);
-					exit(1);
-				}
-			}else{
-				fprintf(stderr, "Unrecognized argument: %s\n", argv[i]);
-				printf(usage, argv[0]);
-				exit(1);
-			}
+			load_file(argv[i]);
 		}
 	}
 }
@@ -85,26 +100,12 @@ write_header(void)
 	}
 }
 
-void
-write_data(void)
+uint16_t
+process_data(uint8_t *buffer)
 {
 	uint8_t byte, mask;
-	uint16_t size;
-	uint8_t *buffer;
+	uint16_t index = 0;
 	uint16_t x, y;
-	uint16_t index;
-
-	size = context.width * context.height / 8;
-	if((context.width * context.height) % 8 != 0)
-		size += 1;
-	buffer = malloc(size);
-	index = 0;
-	
-	if(buffer == NULL){
-		fwrite("OOM\n", 4, 1, stderr);
-		exit(1);
-	}
-
 	for(y = 0; y < context.height; y++){
 		byte = 0;
 		mask = 0x80;
@@ -125,7 +126,27 @@ write_data(void)
 			index += 1;
 		}
 	}
-	fwrite(buffer, index, 1, context.outfile);
+	return index;
+}
+
+void
+write_data(void)
+{
+	uint16_t size;
+	uint8_t *buffer;
+
+	size = context.width * context.height / 8;
+	if((context.width * context.height) % 8 != 0)
+		size += 1;
+	buffer = malloc(size);
+	
+	if(buffer == NULL){
+		fwrite("OOM\n", 4, 1, stderr);
+		exit(1);
+	}
+
+	size = process_data(buffer);
+	fwrite(buffer, size, 1, context.outfile);
 	free(buffer);
 }
 
