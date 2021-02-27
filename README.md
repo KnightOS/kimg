@@ -12,6 +12,13 @@ Converts example.png (portable network graphics) into example.img (kimg).
 
 For more information, see the man page.
 
+## Compiling
+```sh
+cmake .
+make
+sudo make install
+```
+
 ## Help, Bugs, Feedback
 
 If you need help with KnightOS, want to keep up with progress, chat with
