@@ -1,60 +1,51 @@
-/////
-vim:set ts=4 sw=4 tw=82 noet:
-/////
-kimg (1)
-========
+KIMG(1)
 
-Name
-----
+# NAME
+
 kimg - KnightOS image conversion tool
 
-Synopsis
---------
-'kimg' [options] _input_ _output_
+# SYNOPSIS
 
-Description
------------
+*kimg* [options] _input_ _output_
+
+# DESCRIPTION
 
 Converts image formats supported by stb_image to the KnightOS image format.
 
-Options
--------
+# OPTIONS
 
-*-b, \--bare*::
+*-b, \--bare*
 	Omit the KIMG headers and write raw image data out.
 
-*-c, \--castle*::
+*-c, \--castle*
 	Implies -m, and -n and enforces the use of a 16x16 sprite.
 
-*-m, \--monochrome*::
+*-m, \--monochrome*
 	Converts the image to a monochrome KIMG file. Implies -p.
 
-*-n, \--no-compression*::
+*-n, \--no-compression*
 	Does not use (lossless) KIMG compression.
 
-*-p, \--no-palette*::
+*-p, \--no-palette*
 	Instruct kimg not to use a color palette.
 
-*-x, \--compression* <format>::
+*-x, \--compression* <format>
 	Uses the specified compression algorithm. The following options are available:
 	
-	* _NONE_
-	* _RLE_ (default)
+	- _NONE_
+	- _RLE_ (default)
 
-Examples
---------
+# EXAMPLES
 
-kimg example.png example.img::
+*kimg example.png example.img*
 	Converts example.png (portable network graphics) into example.img (kimg).
 
-Authors
--------
+# AUTHORS
 
 Maintained by Drew DeVault <sir@cmpwn.com>, who is assisted by other open
 source contributors. For more information about kimg development, see
-<https://github.com/KnightOS/kimg>.
+https://github.com/KnightOS/kimg.
 
-See Also
---------
+# SEE ALSO
 
-**convert**(1)
+*convert*(1)

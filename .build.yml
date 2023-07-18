@@ -1,6 +1,6 @@
 image: alpine/latest
 packages:
-  - asciidoc
+  - scdoc
 sources:
   - https://github.com/KnightOS/kimg
 tasks:
