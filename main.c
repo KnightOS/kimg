@@ -13,6 +13,7 @@ struct {
 	unsigned char *infile;
 	FILE *outfile;
 	bool bare;
+	bool castle;
 	uint16_t width, height;
 } context;
 
@@ -31,6 +32,7 @@ void
 init_context(void)
 {
 	context.bare = false;
+	context.castle = false;
 }
 
 void
@@ -44,6 +46,12 @@ load_image(const char *const path)
 	}
 	context.height = (uint16_t)h;
 	context.width = (uint16_t)w;
+
+	if(context.castle && (context.width != 16 || context.height != 16)){
+		fprintf(stderr, "Error: --castle mode requires 16x16 sprites (image is %dx%d)\n",
+			context.width, context.height);
+		exit(1);
+	}
 }
 
 void
@@ -79,6 +87,8 @@ parse_arguments(const int argc, const char *const *const argv)
 			exit(0);
 		}else if(arg("-b", "--bare")){
 			context.bare = true;
+		}else if(arg("-c", "--castle")){
+			context.castle = true;
 		}else if(argv[i][0] == '-'){
 			fprintf(stderr, "Unrecognized argument: %s\n", argv[i]);
 			exit(1);
