@@ -18,17 +18,17 @@ struct {
 } context;
 
 const char usage[] =
-	    	"Usage: %s [options] input output\n"
-	    	"\n"
-	    	"Options:\n"
-	    	"\n"
-	    	"-c, --castle\n"
-	    	"\tEnforces the use of a 16x16 sprite. Implies -m and -n.\n"
-	    	"\n"
-	    	"-m, --monochrome\n"
-	    	"\tConverts the image to a monochrome KIMG file. This is on by default for now; color support is not yet implemented.\n"
-	    	"\n"
-	    	"For more information, see the man page.\n"
+			"Usage: %s [options] input output\n"
+			"\n"
+			"Options:\n"
+			"\n"
+			"-b, --bare\n"
+			"\tOmit the KIMG headers and write raw image data out.\n"
+			"\n"
+			"-c, --castle\n"
+			"\tEnforces the use of a 16x16 sprite.\n"
+			"\n"
+			"For more information, see the man page.\n"
 ;
 
 void
@@ -122,7 +122,7 @@ process_data(uint8_t *buffer)
 	for(y = 0; y < context.height; y++){
 		byte = 0;
 		mask = 0x80;
-		
+
 		for(x = 0; x < context.width; x++){
 			if(context.infile[y * context.width + x] < 127)
 				byte |= mask;
@@ -152,7 +152,7 @@ write_data(void)
 	if((context.width * context.height) % 8 != 0)
 		size += 1;
 	buffer = malloc(size);
-	
+
 	if(buffer == NULL){
 		fwrite("OOM\n", 4, 1, stderr);
 		exit(1);
