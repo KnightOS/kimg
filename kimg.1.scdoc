@@ -18,22 +18,7 @@ Converts image formats supported by stb_image to the KnightOS image format.
 	Omit the KIMG headers and write raw image data out.
 
 *-c, \--castle*
-	Implies -m, and -n and enforces the use of a 16x16 sprite.
-
-*-m, \--monochrome*
-	Converts the image to a monochrome KIMG file. Implies -p.
-
-*-n, \--no-compression*
-	Does not use (lossless) KIMG compression.
-
-*-p, \--no-palette*
-	Instruct kimg not to use a color palette.
-
-*-x, \--compression* <format>
-	Uses the specified compression algorithm. The following options are available:
-	
-	- _NONE_
-	- _RLE_ (default)
+	Enforces the use of a 16x16 sprite.
 
 # EXAMPLES
 
